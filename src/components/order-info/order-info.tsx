@@ -1,28 +1,42 @@
 import { Preloader, OrderInfoUI } from '@ui';
-import { useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
+import { useParams } from 'react-router-dom';
+
+import {
+  selectIngredients,
+  selectIngredientsError,
+  selectIngredientsLoading,
+} from '@services/selectors/ingredientsSelectors';
+import { selectOrderState } from '@services/selectors/orderSelectors';
+import { fetchOrderByNumber, clearOrderDetails } from '@services/slices/orderSlice';
+import { useDispatch, useSelector } from '@services/store';
 
 import type { TIngredient } from '@utils-types';
 
 export const OrderInfo = (): React.JSX.Element => {
-  /** TODO: взять переменные orderData и ingredients из стора */
-  const orderData = {
-    createdAt: '',
-    ingredients: [],
-    _id: '',
-    status: '',
-    name: '',
-    updatedAt: 'string',
-    number: 0,
-  };
+  const { number } = useParams<{ number: string }>();
+  const orderNumber = Number(number);
+  const dispatch = useDispatch();
+  const { details, detailsNumber, detailsLoading, detailsError } =
+    useSelector(selectOrderState);
+  const ingredients = useSelector(selectIngredients);
+  const ingredientsLoading = useSelector(selectIngredientsLoading);
+  const ingredientsError = useSelector(selectIngredientsError);
+  const orderData = details?.number === orderNumber ? details : null;
 
-  const ingredients: TIngredient[] = [];
+  useEffect(() => {
+    void dispatch(fetchOrderByNumber(orderNumber));
+    return (): void => {
+      dispatch(clearOrderDetails());
+    };
+  }, [dispatch, orderNumber]);
 
   /**
    * использование useMemo не обязательно
    */
   /* Готовим данные для отображения */
   const orderInfo = useMemo(() => {
-    if (!orderData || !ingredients.length) return null;
+    if (!orderData) return null;
 
     const date = new Date(orderData.createdAt);
 
@@ -60,9 +74,13 @@ export const OrderInfo = (): React.JSX.Element => {
     };
   }, [orderData, ingredients]);
 
-  if (!orderInfo) {
+  if (detailsLoading || ingredientsLoading || !Object.is(detailsNumber, orderNumber)) {
     return <Preloader />;
   }
+
+  if (detailsError || ingredientsError)
+    return <p role="alert">{detailsError ?? ingredientsError}</p>;
+  if (!orderInfo) return <p>Заказ не найден</p>;
 
   return <OrderInfoUI orderInfo={orderInfo} />;
 };
