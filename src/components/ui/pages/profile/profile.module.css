@@ -1,16 +1,29 @@
 .container {
-  composes: container from '../common.module.css';
+  display: flex;
+  align-items: flex-start;
+  width: 100%;
+  max-width: 1240px;
+  height: 100%;
+  margin: 0 auto;
 }
 
 .menu {
+  flex-shrink: 0;
   width: 320px;
 }
 
 .form {
-  composes: form from '../common.module.css';
+  flex-shrink: 0;
+  width: 100%;
   max-width: 480px;
 }
 
+.form div {
+  width: 100%;
+  text-align: right;
+}
+
 .error {
-  composes: error from '../common.module.css';
+  color: #f00;
+  text-align: center;
 }
