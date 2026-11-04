@@ -12,6 +12,7 @@
     "deploy": "gh-pages -d dist",
     "eslint": "eslint ./src/ --fix",
     "lint": "npm run stylelint && npm run eslint && npm run prettier",
+    "postbuild": "node -e \"require('node:fs').copyFileSync('dist/index.html', 'dist/404.html')\"",
     "predeploy": "npm run build",
     "prepare": "husky",
     "start": "vite --port 4000 --strictPort --no-open",
